@@ -1,0 +1,61 @@
+{
+  "member0": {
+    "member_id": 0,
+    "seed": 0,
+    "epochs_trained": 120,
+    "best_val_loss": 0.0207942970848174,
+    "best_epoch": 95,
+    "final_val_mse": 0.039529138599064644,
+    "final_val_ssim": 0.009852069515292928,
+    "wall_time_min": 177.67,
+    "mean_epoch_time_s": 88.82,
+    "files": {
+      "best_checkpoint": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member0.pt",
+      "final_weights": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member0_final.pt",
+      "onnx": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member0.onnx",
+      "history": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/history_member0.json"
+    },
+    "completed_at": "2026-08-04T12:06:25.949647"
+  },
+  "member1": {
+    "member_id": 1,
+    "seed": 1,
+    "epochs_trained": 48,
+    "best_val_loss": 0.019053853049842737,
+    "best_epoch": 23,
+    "final_val_mse": 0.039191539238580625,
+    "final_val_ssim": 0.009961668044160314,
+    "wall_time_min": 75.9,
+    "mean_epoch_time_s": 94.86,
+    "files": {
+      "best_checkpoint": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member1.pt",
+      "final_weights": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member1_final.pt",
+      "onnx": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member1.onnx",
+      "history": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/history_member1.json"
+    },
+    "completed_at": "2026-08-04T13:22:19.831136"
+  },
+  "member2": {
+    "member_id": 2,
+    "seed": 2,
+    "epochs_trained": 48,
+    "best_val_loss": 0.020218551729800506,
+    "best_epoch": 23,
+    "final_val_mse": 0.03732829811340882,
+    "final_val_ssim": 0.009887069160655394,
+    "wall_time_min": 76.93,
+    "mean_epoch_time_s": 96.16,
+    "files": {
+      "best_checkpoint": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member2.pt",
+      "final_weights": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member2_final.pt",
+      "onnx": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member2.onnx",
+      "history": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/history_member2.json"
+    },
+    "completed_at": "2026-08-04T14:39:15.801793"
+  },
+  "ensemble": {
+    "total_wall_min": 330.52,
+    "best_member": 1,
+    "completed_at": "2026-08-04T14:39:15.803198"
+  }
+}

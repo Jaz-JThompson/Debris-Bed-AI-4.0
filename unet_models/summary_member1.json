@@ -1,0 +1,18 @@
+{
+  "member_id": 1,
+  "seed": 1,
+  "epochs_trained": 48,
+  "best_val_loss": 0.019053853049842737,
+  "best_epoch": 23,
+  "final_val_mse": 0.039191539238580625,
+  "final_val_ssim": 0.009961668044160314,
+  "wall_time_min": 75.9,
+  "mean_epoch_time_s": 94.86,
+  "files": {
+    "best_checkpoint": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member1.pt",
+    "final_weights": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member1_final.pt",
+    "onnx": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/model_member1.onnx",
+    "history": "/home/jasminjthompson/energy_PINN_training/2D_Txzt_model/results/UNET_V2/history_member1.json"
+  },
+  "completed_at": "2026-08-04T13:22:19.831136"
+}

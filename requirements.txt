@@ -1,0 +1,16 @@
+streamlit==1.37.0
+tensorflow==2.15.0
+keras==2.15.0
+ml-dtypes==0.2.0
+rich>=10.14.0
+protobuf<5
+h5py==3.8.0
+numpy==1.25.2
+absl-py==2.2.2
+scikit-learn==1.5.2
+pandas==2.1.0
+matplotlib==3.7.2
+xgboost==3.0.0
+plotly==6.0.1
+joblib==1.4.2
+lightgbm==4.1.0
