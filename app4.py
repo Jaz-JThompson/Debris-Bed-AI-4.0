@@ -686,20 +686,28 @@ probabilities = classifier.predict_proba([user_inputs_scaled])
 certainty     = float(np.max(probabilities))
 certainty_pct = int(certainty * 100)
 
-avg_real = None
-predicted_duration = None
+avg_real             = None
+predicted_duration   = None
 uncertainty_duration = None
 
-if prediction in (0, 1) and certainty >= 0.50 and models:
+if certainty < 0.50:
+    # too uncertain — no predictions at all
+    avg_real = None
+elif prediction == 2:
+    # inconclusive — always runs to 7200 s, no regression model needed
+    avg_real             = 7200.0
+    predicted_duration   = timedelta(seconds=7200)
+    uncertainty_duration = None   # no uncertainty — outcome is certain time limit
+elif prediction in (0, 1) and models:
     cls = [0, 1] if prediction == 1 else [1, 0]
     input_array = np.concatenate(
         [np.array(user_inputs_scaled).reshape(1, -1),
          np.array(cls).reshape(1, -1)], axis=1)
-    raw_preds = [model.predict(input_array)[0][0] for model in models]
+    raw_preds  = [model.predict(input_array)[0][0] for model in models]
     real_preds = inverse_scaler_y(np.array(raw_preds).reshape(-1, 1)).flatten()
-    avg_real = float(np.mean(real_preds))
-    std_real = float(np.std(real_preds))
-    predicted_duration = timedelta(seconds=avg_real)
+    avg_real             = float(np.mean(real_preds))
+    std_real             = float(np.std(real_preds))
+    predicted_duration   = timedelta(seconds=avg_real)
     uncertainty_duration = timedelta(seconds=std_real)
 
 def fmt_td(td):
@@ -721,13 +729,20 @@ with st.container(border=True):
         state_text = "🌡️ Debris bed remelts"
     elif prediction == 2:
         state_text = "🤔 Inconclusive"
-        predicted_duration = 7200.0
-        uncertainty_duration = 0
 
-    time_text = fmt_td(predicted_duration) if predicted_duration is not None else "Not available"
-    time_unc_text = f"± {fmt_td(uncertainty_duration)}" if uncertainty_duration is not None else "Not available"
+    if certainty < 0.50:
+        time_text     = "Not available — certainty too low"
+        time_unc_text = ""
+    elif prediction == 2:
+        time_text     = "≥ 7200 s (reaches simulation limit)"
+        time_unc_text = ""
+    elif predicted_duration is not None:
+        time_text     = fmt_td(predicted_duration)
+        time_unc_text = f"± {fmt_td(uncertainty_duration)}" if uncertainty_duration else ""
+    else:
+        time_text     = "Not available"
+        time_unc_text = ""
 
-    # State certainty is shown ONLY here and is not repeated beside the time.
     st.markdown(f"""
     <div class="pred-row">
       <div class="pred-box">
@@ -738,14 +753,13 @@ with st.container(border=True):
         <div class="pred-label">Predicted time</div>
         <div class="pred-value">{time_text} {time_unc_text}</div>
       </div>
-      
     </div>
     """, unsafe_allow_html=True)
 
     if certainty < 0.50:
         st.warning(
-            f"The state prediction is only {certainty_pct}% certain. "
-            "The model therefore does not provide a reliable end-time prediction.")
+            f"⚠️ State prediction certainty is only {certainty_pct}% — below 50%. "
+            "Temperature and energy predictions are not available.")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 3 — TEMPERATURE FIELD
