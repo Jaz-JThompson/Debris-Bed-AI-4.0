@@ -717,8 +717,10 @@ with st.container(border=True):
         state_text = "♨️ Debris bed quenches"
     elif prediction == 0:
         state_text = "🌡️ Debris bed remelts"
-    else:
+    elif prediction == 2:
         state_text = "🤔 Inconclusive"
+        predicted_duration = 7200.0
+        uncertainty_duration = 0
 
     time_text = fmt_td(predicted_duration) if predicted_duration is not None else "Not available"
     time_unc_text = f"± {fmt_td(uncertainty_duration)}" if uncertainty_duration is not None else "Not available"
@@ -738,9 +740,7 @@ with st.container(border=True):
     </div>
     """, unsafe_allow_html=True)
 
-    if prediction == 2:
-        st.info("A definitive conclusion cannot be reached for these inputs.")
-    elif certainty < 0.50:
+    if certainty < 0.50:
         st.warning(
             f"The state prediction is only {certainty_pct}% certain. "
             "The model therefore does not provide a reliable end-time prediction.")
