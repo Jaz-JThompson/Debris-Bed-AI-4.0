@@ -9,6 +9,7 @@ import warnings
 from datetime import timedelta
 import matplotlib
 matplotlib.use('Agg')
+matplotlib.rcParams['text.usetex'] = False
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import keras
@@ -173,8 +174,10 @@ ENERGY_PARAM_RANGES = [
 ]
 
 ENERGY_OUTPUT_LABELS = [
-    r"$E_{pd}$  [MW]", r"$Q_{si}$  [MW]",
-    r"$Q_{sg}$  [MW]", r"$Q_{sl}$  [MW]",
+    "E_pd  [MW]",
+    "Q_si  [MW]",
+    "Q_sg  [MW]",
+    "Q_sl  [MW]",
 ]
 
 
@@ -856,7 +859,7 @@ Error bars show ±2σ across ensemble members.
         else:
             try:
                 # Font size for energy plots — adjust this one value
-                fs = 20
+                fs = 25
 
                 energy_times = np.linspace(0, predicted_duration.total_seconds(), 20)
                 X_energy = build_energy_input(user_inputs, energy_times)
