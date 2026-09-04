@@ -715,28 +715,17 @@ st.markdown('<div class="section-title section-pred">🤖 2. Predicted outcome</
             unsafe_allow_html=True)
 
 with st.container(border=True):
-    if certainty < 0.50:
-        state_text = "⚠️ Prediction not available"
-        time_text = "Not available"
-        time_unc_text = "Not available"
-    else:
-        if prediction == 1:
-            state_text = "♨️ Debris bed quenches"
-        elif prediction == 0:
-            state_text = "🌡️ Debris bed remelts"
-        elif prediction == 2:
-            state_text = "🤔 Inconclusive"
-            predicted_duration = timedelta(seconds=T_SIM_MAX)
-            uncertainty_duration = timedelta(seconds=0)
-        else:
-            state_text = "⚠️ Prediction not available"
+    if prediction == 1:
+        state_text = "♨️ Debris bed quenches"
+    elif prediction == 0:
+        state_text = "🌡️ Debris bed remelts"
+    elif prediction == 2:
+        state_text = "🤔 Inconclusive"
+        predicted_duration = 7200.0
+        uncertainty_duration = 0
 
-        time_text = fmt_td(predicted_duration) if predicted_duration is not None else "Not available"
-        time_unc_text = (
-            f"± {fmt_td(uncertainty_duration)}"
-            if uncertainty_duration is not None
-            else "Not available"
-        )
+    time_text = fmt_td(predicted_duration) if predicted_duration is not None else "Not available"
+    time_unc_text = f"± {fmt_td(uncertainty_duration)}" if uncertainty_duration is not None else "Not available"
 
     # State certainty is shown ONLY here and is not repeated beside the time.
     st.markdown(f"""
@@ -756,8 +745,7 @@ with st.container(border=True):
     if certainty < 0.50:
         st.warning(
             f"The state prediction is only {certainty_pct}% certain. "
-            "Prediction is not available because classifier certainty is below 50%."
-        )
+            "The model therefore does not provide a reliable end-time prediction.")
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 3 — TEMPERATURE FIELD
