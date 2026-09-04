@@ -472,7 +472,7 @@ def render_temperature_frame(results, frame_idx):
 
     ax1.set_title(
         'Predicted Temperature (K)',
-        fontsize=20
+        fontsize=18
     )
     ax1.set_xlabel('x (m)', fontsize=15)
     ax1.set_ylabel('z (m)', fontsize=15)
