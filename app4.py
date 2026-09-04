@@ -381,7 +381,17 @@ def predict_temperature_sequence(_models_key, param_tuple, por_map_tuple,
     ]).astype(np.float32)
 
     X_t = torch.from_numpy(X_all).to(device)  # (n_frames, 11)
-    POR_t = torch.from_numpy(por_map[np.newaxis]).to(device)  # (1,1,NZ,NX)
+
+    # The geometry/porosity map is identical for every requested time step,
+    # but the U-Net requires it to have the same batch dimension as X_t.
+    # expand() avoids physically copying the map n_frames times; contiguous()
+    # makes the tensor safe for convolution layers.
+    POR_t = (
+        torch.from_numpy(por_map[np.newaxis])   # (1, 1, NZ, NX)
+        .to(device)
+        .expand(n_frames, -1, -1, -1)          # (n_frames, 1, NZ, NX)
+        .contiguous()
+    )
 
     preds = []
     with torch.no_grad():
