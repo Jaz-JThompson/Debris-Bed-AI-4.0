@@ -447,13 +447,15 @@ def render_temperature_frame(results, frame_idx):
         hspace=0.4,
         wspace=0.05
     )
+    hours = int(t_s // 3600)
+    minutes = int((t_s % 3600) // 60)
+    seconds = int(t_s % 60)
 
     fig.suptitle(
-        f't = {t_s:.0f} s',
-        fontsize=30,
-        y=1.05
+    f't = {hours} h {minutes} min {seconds} s',
+    fontsize=25,
+    y=1.05
     )
-
     # --------------------------------------------------
     # Prediction
     # --------------------------------------------------
@@ -489,7 +491,7 @@ def render_temperature_frame(results, frame_idx):
 
     cb1.set_label(
         'Temperature (K)',
-        fontsize=20
+        fontsize=15
     )
     cb1.ax.tick_params(labelsize=13)
 
@@ -522,7 +524,7 @@ def render_temperature_frame(results, frame_idx):
 
     ax2.set_title(
         'Uncertainty σ (K)',
-        fontsize=20
+        fontsize=18
     )
     ax2.set_xlabel('x (m)', fontsize=15)
     ax2.set_ylabel('z (m)', fontsize=15)
@@ -541,7 +543,7 @@ def render_temperature_frame(results, frame_idx):
 
     cb2.set_label(
         'Uncertainty σ (K)',
-        fontsize=20
+        fontsize=15
     )
     cb2.ax.tick_params(labelsize=13)
 
