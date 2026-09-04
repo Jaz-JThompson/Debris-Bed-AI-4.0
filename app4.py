@@ -143,7 +143,6 @@ def load_models():
     return models
 
 
-@st.cache_resource
 def load_classifier():
     return joblib.load("OptimizedVotingClassifier.pkl")
 
@@ -268,7 +267,7 @@ def load_unet_ensemble():
         from train_unet_v2 import Config, UNetSurrogate
 
         cfg = Config()
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cpu")
 
         models = []
 
@@ -369,40 +368,28 @@ def predict_temperature_sequence(_models_key, param_tuple, por_map_tuple,
     t_end_norm = t_end_s / T_SIM_MAX
     times_s    = np.linspace(0, t_end_s, n_frames)
 
-    # Batch all time steps together. This replaces n_frames x 3 individual
-    # forward passes with just 3 batched forward passes (one per ensemble member).
-    t_abs_norm = times_s / T_SIM_MAX
-    t_rel = np.clip(t_abs_norm / max(t_end_norm, 1e-8), 0, 1).astype(np.float32)
+    T_mean_all = np.zeros((n_frames, NZ, NX), dtype=np.float32)
+    T_std_all  = np.zeros((n_frames, NZ, NX), dtype=np.float32)
 
-    X_all = np.column_stack([
-        np.tile(params_norm, (n_frames, 1)),
-        t_rel,
-        np.full(n_frames, t_end_norm, dtype=np.float32),
-    ]).astype(np.float32)
+    POR_t = torch.from_numpy(por_map[np.newaxis]).to(device)  # (1,1,NZ,NX)
 
-    X_t = torch.from_numpy(X_all).to(device)  # (n_frames, 11)
+    for i, t_s in enumerate(times_s):
+        t_abs_norm = t_s / T_SIM_MAX
+        t_rel      = float(np.clip(t_abs_norm / max(t_end_norm, 1e-8), 0, 1))
 
-    # The geometry/porosity map is identical for every requested time step,
-    # but the U-Net requires it to have the same batch dimension as X_t.
-    # expand() avoids physically copying the map n_frames times; contiguous()
-    # makes the tensor safe for convolution layers.
-    POR_t = (
-        torch.from_numpy(por_map[np.newaxis])   # (1, 1, NZ, NX)
-        .to(device)
-        .expand(n_frames, -1, -1, -1)          # (n_frames, 1, NZ, NX)
-        .contiguous()
-    )
+        # 11-value input: 9 normalised params + t_rel + t_end_norm
+        X_t = torch.from_numpy(
+            np.concatenate([params_norm,
+                            np.array([t_rel, t_end_norm], dtype=np.float32)])
+        )[None].to(device)  # (1, 11)
 
-    preds = []
-    with torch.no_grad():
-        for model in unet_models:
-            # UNetSurrogate must support a batch dimension for this optimization.
-            pred = model(X_t, POR_t).cpu().numpy()
-            preds.append(pred)
-
-    preds = np.stack(preds)  # (n_models, n_frames, NZ, NX)
-    T_mean_all = preds.mean(axis=0).astype(np.float32)
-    T_std_all  = preds.std(axis=0).astype(np.float32)
+        preds = []
+        with torch.no_grad():
+            for model in unet_models:
+                preds.append(model(X_t, POR_t).cpu().numpy()[0])
+        preds = np.stack(preds)
+        T_mean_all[i] = preds.mean(0)
+        T_std_all[i]  = preds.std(0)
 
     T_range = T_MAX - T_MIN
     mask    = por_map[0] > 0.01
@@ -703,7 +690,7 @@ avg_real = None
 predicted_duration = None
 uncertainty_duration = None
 
-if certainty >= 0.50 and prediction in (0, 1) and models:
+if prediction in (0, 1) and certainty >= 0.50 and models:
     cls = [0, 1] if prediction == 1 else [1, 0]
     input_array = np.concatenate(
         [np.array(user_inputs_scaled).reshape(1, -1),
@@ -712,15 +699,8 @@ if certainty >= 0.50 and prediction in (0, 1) and models:
     real_preds = inverse_scaler_y(np.array(raw_preds).reshape(-1, 1)).flatten()
     avg_real = float(np.mean(real_preds))
     std_real = float(np.std(real_preds))
-    predicted_duration = timedelta(seconds=max(0.0, avg_real))
-    uncertainty_duration = timedelta(seconds=max(0.0, std_real))
-elif certainty >= 0.50 and prediction == 2:
-    # An inconclusive class prediction is still a valid classified outcome,
-    # but there is no regression end-time prediction for class 2. Use the
-    # requested 7200 s horizon with zero uncertainty.
-    avg_real = T_SIM_MAX
-    predicted_duration = timedelta(seconds=T_SIM_MAX)
-    uncertainty_duration = timedelta(0)
+    predicted_duration = timedelta(seconds=avg_real)
+    uncertainty_duration = timedelta(seconds=std_real)
 
 def fmt_td(td):
     s = max(0, int(td.total_seconds()))
@@ -746,11 +726,17 @@ with st.container(border=True):
             state_text = "🌡️ Debris bed remelts"
         elif prediction == 2:
             state_text = "🤔 Inconclusive"
+            predicted_duration = timedelta(seconds=T_SIM_MAX)
+            uncertainty_duration = timedelta(seconds=0)
         else:
             state_text = "⚠️ Prediction not available"
 
         time_text = fmt_td(predicted_duration) if predicted_duration is not None else "Not available"
-        time_unc_text = f"± {fmt_td(uncertainty_duration)}" if uncertainty_duration is not None else "Not available"
+        time_unc_text = (
+            f"± {fmt_td(uncertainty_duration)}"
+            if uncertainty_duration is not None
+            else "Not available"
+        )
 
     # State certainty is shown ONLY here and is not repeated beside the time.
     st.markdown(f"""
@@ -770,7 +756,8 @@ with st.container(border=True):
     if certainty < 0.50:
         st.warning(
             f"The state prediction is only {certainty_pct}% certain. "
-            "The model therefore does not provide a reliable end-time prediction.")
+            "Prediction is not available because classifier certainty is below 50%."
+        )
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 3 — TEMPERATURE FIELD
