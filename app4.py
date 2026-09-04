@@ -12,6 +12,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import keras
+from matplotlib.patches import Polygon
+from matplotlib.collections import PatchCollection
+
 import sys
 # ============================================================
 # PyTorch availability
@@ -504,6 +507,18 @@ def render_temperature_frame(results, frame_idx):
         vmax=smax,
         shading='auto'
     )
+    # geometric structural block — fixed geometry, same on every frame
+    # block sits from r=3.35 to r=4.4m, z=0 to z=1.0m
+
+    block_r = [3.35, 4.4, 4.4, 3.35]
+    block_z = [0.0,  0.0, 1.0, 1.0]
+
+    for ax in [ax1, ax2]:
+        block = Polygon(list(zip(block_r, block_z)), closed=True)
+        pc_block = PatchCollection([block], facecolor='grey',
+                                    edgecolor='darkgrey',
+                                    alpha=0.85, zorder=5)
+        ax.add_collection(pc_block)
 
     ax2.set_title(
         'Uncertainty σ (K)',
